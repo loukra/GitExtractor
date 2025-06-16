@@ -5,6 +5,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Linq;
+using OpenAI.Chat;
 
 namespace GitExtractor
 {
@@ -88,7 +90,27 @@ namespace GitExtractor
                 }
             }
 
-            System.Windows.MessageBox.Show($"Read {files.Count} files.");
+            if (files.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No files found for the selected week.");
+                return;
+            }
+
+            var diffText = string.Join("\n\n", files);
+
+            try
+            {
+                const string ApiKey = "<YOUR_OPENAI_API_KEY>"; // TODO: replace with your API key
+                ChatClient client = new("gpt-4o", ApiKey);
+                string prompt = "Analyze the following git diff files and provide your insights:\n\n" + diffText;
+                ChatCompletion completion = client.CompleteChat(prompt);
+                string response = completion.Content.FirstOrDefault()?.Text ?? "No response";
+                System.Windows.MessageBox.Show(response, "OpenAI Analysis");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Failed to call OpenAI API: {ex.Message}");
+            }
         }
 
         private bool TryGetDateFromFileName(string fileName, out DateTime date)
