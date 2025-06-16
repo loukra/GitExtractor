@@ -100,9 +100,9 @@ namespace GitExtractor
 
             try
             {
-                const string ApiKey = "<YOUR_OPENAI_API_KEY>"; // TODO: replace with your API key
+                const string ApiKey = "pD99LssA"; // TODO: replace with your API key
                 ChatClient client = new("gpt-4o", ApiKey);
-                string prompt = "Analyze the following git diff files and provide your insights:\n\n" + diffText;
+                string prompt = "Analyze the following git diff files and provide your insights:\n\n. this is for a weekly report. please keep it short and understandable, even for developers who are not involved in the project. write in bullet points. add a header for each branch contained in the diffs and write down the bullet points below. be minimalistic, only 1 to 2 sentences per change. you may summarize several diffs if it is a more global change. unimportant diffs may also be ignored." + diffText;
                 ChatCompletion completion = client.CompleteChat(prompt);
                 string response = completion.Content.FirstOrDefault()?.Text ?? "No response";
                 System.Windows.MessageBox.Show(response, "OpenAI Analysis");
