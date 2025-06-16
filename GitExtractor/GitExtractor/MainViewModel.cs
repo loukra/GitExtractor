@@ -6,7 +6,9 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Linq;
+using System.Windows;
 using OpenAI.Chat;
+using Clipboard = System.Windows.Clipboard;
 
 namespace GitExtractor
 {
@@ -46,6 +48,22 @@ namespace GitExtractor
 
         public ICommand SelectFolderCommand { get; }
         public ICommand ExtractCommand { get; }
+        public ICommand CopyOutputCommand { get; }
+
+        private string? output;
+        public string? Output
+        {
+            get => output;
+            set
+            {
+                if (output != value)
+                {
+                    output = value;
+                    OnPropertyChanged(nameof(Output));
+                    CommandManager.InvalidateRequerySuggested();
+                }
+            }
+        }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -53,6 +71,7 @@ namespace GitExtractor
         {
             SelectFolderCommand = new RelayCommand(_ => SelectFolder());
             ExtractCommand = new RelayCommand(_ => Extract());
+            CopyOutputCommand = new RelayCommand(_ => CopyOutput(), _ => !string.IsNullOrEmpty(Output));
             LoadSettings();
         }
 
@@ -104,12 +123,11 @@ namespace GitExtractor
                 ChatClient client = new("gpt-4o", ApiKey);
                 string prompt = "Analyze the following git diff files and provide your insights:\n\n. this is for a weekly report. please keep it short and understandable, even for developers who are not involved in the project. write in bullet points. add a header for each branch contained in the diffs and write down the bullet points below. be minimalistic, only 1 to 2 sentences per change. you may summarize several diffs if it is a more global change. unimportant diffs may also be ignored." + diffText;
                 ChatCompletion completion = client.CompleteChat(prompt);
-                string response = completion.Content.FirstOrDefault()?.Text ?? "No response";
-                System.Windows.MessageBox.Show(response, "OpenAI Analysis");
+                Output = completion.Content.FirstOrDefault()?.Text ?? "No response";
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Failed to call OpenAI API: {ex.Message}");
+                Output = $"Failed to call OpenAI API: {ex.Message}";
             }
         }
 
@@ -159,6 +177,14 @@ namespace GitExtractor
             catch
             {
                 // ignore errors when saving settings
+            }
+        }
+
+        private void CopyOutput()
+        {
+            if (!string.IsNullOrEmpty(Output))
+            {
+                Clipboard.SetText(Output);
             }
         }
 
