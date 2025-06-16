@@ -8,6 +8,7 @@ using System.Windows.Input;
 using System.Linq;
 using System.Windows;
 using OpenAI.Chat;
+using Clipboard = System.Windows.Clipboard;
 
 namespace GitExtractor
 {
