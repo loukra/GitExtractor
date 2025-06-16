@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ModernWpfUI" Version="0.9.7-preview.2" />
     <PackageReference Include="OpenAI" Version="2.2.0-beta.4" />
   </ItemGroup>
 
