@@ -5,6 +5,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Linq;
+using OpenAI.Chat;
 
 namespace GitExtractor
 {
@@ -88,7 +90,27 @@ namespace GitExtractor
                 }
             }
 
-            System.Windows.MessageBox.Show($"Read {files.Count} files.");
+            if (files.Count == 0)
+            {
+                System.Windows.MessageBox.Show("No files found for the selected week.");
+                return;
+            }
+
+            var diffText = string.Join("\n\n", files);
+
+            try
+            {
+                const string ApiKey = "pD99LssA"; // TODO: replace with your API key
+                ChatClient client = new("gpt-4o", ApiKey);
+                string prompt = "Analyze the following git diff files and provide your insights:\n\n. this is for a weekly report. please keep it short and understandable, even for developers who are not involved in the project. write in bullet points. add a header for each branch contained in the diffs and write down the bullet points below. be minimalistic, only 1 to 2 sentences per change. you may summarize several diffs if it is a more global change. unimportant diffs may also be ignored." + diffText;
+                ChatCompletion completion = client.CompleteChat(prompt);
+                string response = completion.Content.FirstOrDefault()?.Text ?? "No response";
+                System.Windows.MessageBox.Show(response, "OpenAI Analysis");
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Failed to call OpenAI API: {ex.Message}");
+            }
         }
 
         private bool TryGetDateFromFileName(string fileName, out DateTime date)
